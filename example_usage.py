@@ -18,13 +18,14 @@ for img_path in images:
     print(f"  - {img_path}")
 
 
-
 # 示例 2: 批量生成多个称号的图片
 print("\n" + "=" * 60)
 print("示例 2: 批量生成多个称号的图片")
 print("=" * 60)
 
-title_names = ["765の達人", "能力覚醒！", "ドンだー！世界一決定戦2021外伝優勝", "双神竜王"]
+title_names = [
+    "トロいか2000",
+]
 for title in title_names:
     print(f"\n生成称号: {title}")
     images = generate_titles_images(title_name=title)

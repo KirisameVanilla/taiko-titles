@@ -11,11 +11,11 @@ def query_titles_by_name_and_color(
 ) -> List[Tuple]:
     """
     根据称号名称和/或稀有度颜色查询称号
-    
+
     参数:
         title_name: 称号名称（可选）
         rarity_color: 稀有度颜色（可选）
-    
+
     返回:
         符合条件的称号列表
     """
@@ -70,17 +70,17 @@ def wrap_text(text: str, font, max_width: int) -> List[str]:
 def load_title_frame(rarity_color: str) -> Optional[Image.Image]:
     """
     根据稀有度颜色加载对应的称号框图片
-    
+
     参数:
         rarity_color: 稀有度颜色（如 #ded523）
-    
+
     返回:
         称号框图片，如果找不到则返回 None
     """
     # 清理颜色值作为文件名
     color_filename = rarity_color.lower().replace("#", "")
     frame_path = Path("resources") / f"#{color_filename}.png"
-    
+
     if frame_path.exists():
         try:
             return Image.open(frame_path)
@@ -101,14 +101,14 @@ def generate_title_image(
 ) -> str:
     """
     生成单个称号信息图片
-    
+
     参数:
         title_data: 数据库查询返回的称号数据元组
         output_path: 输出图片路径
         width: 图片宽度
         font_size_title: 标题字体大小（称号框内文字）
         font_size_body: 正文字体大小
-    
+
     返回:
         生成的图片路径
     """
@@ -134,7 +134,7 @@ def generate_title_image(
     try:
         # 优先使用项目中的字体
         custom_font_path = Path("resources") / "FOT-大江戸勘亭流 Std E.otf"
-        
+
         if custom_font_path.exists():
             font_title = ImageFont.truetype(str(custom_font_path), font_size_title)
             font_body = ImageFont.truetype(str(custom_font_path), font_size_body)
@@ -175,11 +175,13 @@ def generate_title_image(
 
     # 加载称号框
     title_frame = load_title_frame(rarity_color)
-    
+    if not title_frame:
+        return ""
+
     # 称号框尺寸（556x90）
-    frame_width = 556
-    frame_height = 90
-    
+    frame_width = title_frame.width
+    frame_height = title_frame.height
+
     # 计算所需高度
     max_text_width = width - 2 * padding
 
@@ -230,23 +232,27 @@ def generate_title_image(
         # 将称号框居中放置
         frame_x = (width - frame_width) // 2
         frame_y = current_y
-        
+
         # 粘贴称号框
-        img.paste(title_frame, (frame_x, frame_y), title_frame if title_frame.mode == 'RGBA' else None)
-        
+        img.paste(
+            title_frame,
+            (frame_x, frame_y),
+            title_frame if title_frame.mode == "RGBA" else None,
+        )
+
         # 在称号框上半部分居中绘制称号文字
         # 计算文字宽度以居中
         bbox = font_title.getbbox(title_name)
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
-        
-        # 文字位置：框的水平居中，垂直位置在框的上半部分（约1/3处）
+
+        # 文字位置：框的水平居中，垂直位置在框的上半部分（约1/4处）
         text_x = frame_x + (frame_width - text_width) // 2
-        text_y = frame_y + (frame_height // 4) - (text_height // 2)
-        
+        text_y = frame_y + frame_height - 68 - (text_height // 2)
+
         # 绘制黑色文字（无描边）
         draw.text((text_x, text_y), title_name, fill=(0, 0, 0), font=font_title)
-        
+
         current_y += frame_height + section_spacing
     else:
         # 如果没有称号框，用原来的方式显示称号名称
@@ -269,6 +275,11 @@ def generate_title_image(
     current_y += font_size_body + 10
 
     for line in condition_lines:
+        line = (
+            line.replace("おに", "鬼")
+            .replace("ドンダフルコンボ", "全良")
+            .replace("フルコンボ", "全連")
+        )
         draw.text((padding + 20, current_y), line, fill=(50, 50, 50), font=font_body)
         current_y += font_size_body + 10
 
@@ -293,16 +304,18 @@ def generate_title_image(
 
 
 def generate_titles_images(
-    title_name: Optional[str] = None, rarity_color: Optional[str] = None, output_dir: str = "output"
+    title_name: Optional[str] = None,
+    rarity_color: Optional[str] = None,
+    output_dir: str = "output",
 ) -> List[str]:
     """
     根据称号名称和稀有度颜色生成图片
-    
+
     参数:
         title_name: 称号名称（可选）
         rarity_color: 稀有度颜色（可选）
         output_dir: 输出目录
-    
+
     返回:
         生成的图片路径列表
     """
