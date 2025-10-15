@@ -13,7 +13,7 @@ def query_titles_by_name_and_color(
     根据称号名称和/或稀有度颜色查询称号
 
     参数:
-        title_name: 称号名称（可选）
+        title_name: 称号名称（可选，使用模糊匹配）
         rarity_color: 稀有度颜色（可选）
 
     返回:
@@ -27,8 +27,9 @@ def query_titles_by_name_and_color(
     params = []
 
     if title_name:
-        query += " AND title_name = ?"
-        params.append(title_name)
+        # 使用 LIKE 进行模糊搜索
+        query += " AND title_name LIKE ?"
+        params.append(f"%{title_name}%")
 
     if rarity_color:
         query += " AND rarity_color = ?"
@@ -331,6 +332,12 @@ def generate_titles_images(
         return []
 
     print(f"找到 {len(titles)} 个符合条件的称号")
+
+    # 检查结果数量，只有小于5个时才生成图片
+    if len(titles) >= 5:
+        print(f"找到的结果数量 ({len(titles)}) 大于等于5个，不生成图片")
+        print("请提供更精确的搜索条件以减少结果数量")
+        return []
 
     # 为每个称号生成图片
     generated_images = []

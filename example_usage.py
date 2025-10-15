@@ -24,7 +24,7 @@ print("示例 2: 批量生成多个称号的图片")
 print("=" * 60)
 
 title_names = [
-    "トロいか2000",
+    "正体不明",
 ]
 for title in title_names:
     print(f"\n生成称号: {title}")
